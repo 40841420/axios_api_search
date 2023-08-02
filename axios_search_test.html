@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+    <!-- 解決不認得axios -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        .DoctorName {
+            /* background-color: #fa0; */
+            margin: 20px;
+            color: red;
+            
+        }
+
+        .Exper {
+            /* background-color: #000; */
+            margin: 20px;
+            height: 30vh;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        #myForm{
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <form id="myForm">
+        <label for="searchInput">請輸入醫生姓名：</label>
+        <input type="text" id="searchInput" name="doctorName" />
+        <button type="submit">搜尋</button>
+    </form>
+
+    <div class="js" id="dataList">
+        <!-- <h1>.................</h1> -->
+    </div>
+</body>
+<script>
+    //GET請求
+    axios({
+        method: 'get',
+        url: 'https://api.kcg.gov.tw/api/service/Get/95d026d5-c0c6-463b-b468-50cf1432ddcd',
+
+    })
+
+        .then((response) => {
+            //取得高雄市政府的開放資料
+            const data = response.data.data.DoctorInfo;
+            // console.log(data);
+
+            // 檢查資料是否為空
+            if (!data || data.length === 0) {
+                console.error("No data found.");
+                return; // 終止後續處理
+            }
+
+            // 使用 FormData 獲取用戶輸入的值
+            document.getElementById("myForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // 阻止表單的默認提交行為
+                const formData = new FormData(event.target);
+                const doctorName = formData.get("doctorName");
+
+                //針對醫生的姓名下去做查詢
+                const key = "DoctorName";
+                //const valueArr = ["黃"];    //寫死的
+                //改為[doctorName]，接收變數使用
+                const valueArr = [doctorName];
+
+                // 模糊搜尋
+                //let res = data.filter(item => valueArr.find(i => i === item[key]));
+                let res = data.filter(item => valueArr.find(i => item[key].includes(i)));
+
+                // 將篩選結果印出
+                // console.log(res);
+
+
+                //做迴圈把array跑出來 console.log 檢視
+                res.forEach(element => {
+                    console.log(element);
+                });
+
+                //做迴圈把array跑出來，丟到html 檢視
+                let dataListHTML = "";//做個空陣列放資料
+                if (res != 0) {
+
+
+                    res.forEach(item => {
+                        dataListHTML += `<li class="DoctorName">醫生姓名:${item.DoctorName}</li>`;
+                        dataListHTML += `<li class="Exper">經歷:${item.Exper}</li>`;
+                    });
+                }
+                else {
+                    dataListHTML += `<li class="Exper">此api沒有該名醫師的資料</li>`;
+                }
+                // 将 HTML 字符串插入到页面的 ul 元素中
+                const dataListElement = document.getElementById("dataList");
+                dataListElement.innerHTML = dataListHTML;
+
+            });
+        })
+
+        .catch((error) => {
+            // 處理錯誤
+            console.error("Error fetching data:", error);
+        });
+
+
+</script>
+
+</html>
